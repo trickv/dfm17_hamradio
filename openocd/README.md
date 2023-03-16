@@ -8,6 +8,7 @@ How to:
 * In another shell, run: ```telnet localhost 4444``` and run
 ```
 reset halt
+stm32f1x mass_erase 0
 flash write_bank 0 dfm17.bin
 reset run
 ```
