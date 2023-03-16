@@ -4,7 +4,7 @@ How to:
 * Install packages: ```sudo apt install openocd gcc-arm-none-eabi```
 * Build: ```cd dfm17/Release``` and then run ```make all```
 * Convert from elf to bin: ```arm-none-eabi-objcopy -O binary dfm17.elf dfm17.bin```
-* Run openocd which talks to the STLinkv2 programmer: ```openocd -c ../../openocd/openocd.cfg```
+* Run openocd which talks to the STLinkv2 programmer: ```openocd -f ../../openocd/openocd.cfg```
 * In another shell, run: ```telnet localhost 4444``` and run
 ```
 reset halt
