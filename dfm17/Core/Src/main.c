@@ -327,12 +327,12 @@ int main(void)
   /* USER CODE BEGIN 2 */
 
   initHw();
-  si4060_stop_tx();
+  //si4060_stop_tx();
 
 
 
-  aprs_prepare_buffer(&GNSS_Handle, 0);
-  calculate_fcs();
+  //aprs_prepare_buffer(&GNSS_Handle, 0);
+  //calculate_fcs();
 
   stopGpsLockTimer();
   stopGpsTickTimer();
@@ -348,11 +348,12 @@ int main(void)
 
     /* USER CODE BEGIN 3 */
 	  HAL_Delay(1000);
-	  tx_aprs();
+	  //tx_aprs();
+	  STABBY_aprs();
 
 	  // If you're developing APRS and don't want to wait for slow RTTY, comment these out:
-	  HAL_Delay(1000);
-	  tx_rtty();
+	  //HAL_Delay(1000);
+	  //tx_rtty();
 
   }
   /* USER CODE END 3 */

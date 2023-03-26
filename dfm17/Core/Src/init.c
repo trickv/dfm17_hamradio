@@ -85,5 +85,5 @@ void initRadio() {
 	}
 
 	si4060_power_up(); 		//power up radio
-	si4060_change_state(STATE_TX);
+	//si4060_change_state(STATE_TX);
 }

@@ -35,6 +35,98 @@
 #include "spi.h"
 #include "tim.h"
 
+
+
+void STABBY_setModemAFSK(void) {
+	// stuff from: si4060_set_aprs_params_TESTING();
+	/*
+	si4060_set_property_8(PROP_MODEM,
+			MODEM_CLKGEN_BAND,
+			SY_SEL_1 | FVCO_DIV_10);
+	// setup frequency deviation offset
+	si4060_set_property_16(PROP_MODEM,
+			MODEM_FREQ_OFFSET,
+			0);
+	// setup frequency deviation
+	si4060_set_property_24(PROP_MODEM,
+			MODEM_FREQ_DEV,
+			(uint16_t)(2*FDEV_APRS_DFM));
+	// set up the integer divider
+	si4060_set_property_8(PROP_FREQ_CONTROL,
+			FREQ_CONTROL_INTE,
+			(uint8_t)FDIV_INTE_DFM);
+	// set up the fractional divider
+	si4060_set_property_24(PROP_FREQ_CONTROL,
+			FREQ_CONTROL_FRAC,
+			(uint32_t)FDEV_DFM);
+			*/
+
+	// stuff from pecan Si4464_init:
+
+    // Set transmitter GPIOs
+    uint8_t gpio_pin_cfg_command[] = {
+        0x13,   // Command type = GPIO settings
+        0x00,   // GPIO0        0 - PULL_CTL[1bit] - GPIO_MODE[6bit]
+        0x23,   // GPIO1        0 - PULL_CTL[1bit] - GPIO_MODE[6bit]
+        0x00,   // GPIO2        0 - PULL_CTL[1bit] - GPIO_MODE[6bit]
+        0x00,   // GPIO3        0 - PULL_CTL[1bit] - GPIO_MODE[6bit]
+        0x00,   // NIRQ
+        0x00,   // SDO
+        0x00    // GEN_CONFIG
+    };
+    STABBY_Si4464_write(gpio_pin_cfg_command, 8);
+    HAL_Delay(25);
+
+	// Set FIFO empty interrupt threshold (32 byte)
+	uint8_t set_fifo_irq[] = {0x11, 0x12, 0x01, 0x0B, 0x20};
+	STABBY_Si4464_write(set_fifo_irq, 5);
+
+	// Set FIFO to 129 byte
+	uint8_t set_129byte[] = {0x11, 0x00, 0x01, 0x03, 0x10};
+	STABBY_Si4464_write(set_129byte, 5);
+
+	// Reset FIFO
+	uint8_t reset_fifo[] = {0x15, 0x01};
+	STABBY_Si4464_write(reset_fifo, 2);
+	uint8_t unreset_fifo[] = {0x15, 0x00};
+	STABBY_Si4464_write(unreset_fifo, 2);
+
+	// now stuff from pecan pico 9 initAFSK:
+	// Setup the NCO data rate for APRS
+	uint8_t setup_data_rate[] = {0x11, 0x20, 0x03, 0x03, 0x00, 0x33, 0x90};
+	STABBY_Si4464_write(setup_data_rate, 7);
+
+	// Use 2GFSK from FIFO (PH)
+	uint8_t use_2gfsk[] = {0x11, 0x20, 0x01, 0x00, 0x03};
+	STABBY_Si4464_write(use_2gfsk, 5);
+
+	// Set AFSK filter
+	uint8_t coeff[] = {0x81, 0x9f, 0xc4, 0xee, 0x18, 0x3e, 0x5c, 0x70, 0x76};
+	uint8_t i;
+	for(i=0; i<sizeof(coeff); i++) {
+		uint8_t msg[] = {0x11, 0x20, 0x01, 0x17-i, coeff[i]};
+		STABBY_Si4464_write(msg, 5);
+	}
+
+	// transmit LSB first
+	uint8_t use_lsb_first[] = {0x11, 0x12, 0x01, 0x06, 0x01};
+	STABBY_Si4464_write(use_lsb_first, 5);
+}
+
+void STABBY_Si4464_writeFIFO(uint8_t *msg, uint8_t size) {
+	uint8_t write_fifo[size+1];
+	write_fifo[0] = 0x66;
+	memcpy(&write_fifo[1], msg, size);
+	STABBY_Si4464_write(write_fifo, size+1);
+}
+
+uint8_t STABBY_Si4464_freeFIFO(void) {
+	uint8_t fifo_info[2] = {0x15, 0x00};
+	uint8_t rxData[4];
+	STABBY_Si4464_read(fifo_info, 2, rxData, 4);
+	return rxData[3];
+}
+
 void si4060_freq_aprs_dfm17(void) {
 	si4060_set_aprs_params_TESTING();
 	/* set up the integer divider */
@@ -230,6 +322,87 @@ void si4060_start_tx(uint8_t channel) {
 	spi_deselect();
 }
 
+void STABBY_si4060_start_tx(uint16_t size) {
+	si4060_get_cts(0);
+	spi_select();
+	/*spi_write(CMD_START_TX);
+	spi_write(channel);
+	spi_write(START_TX_TXC_STATE_SLEEP | START_TX_RETRANSMIT_0 | START_TX_START_IMM);*/
+	uint8_t change_state_command[] = {0x31, 0x00, 0x30, (size >> 8) & 0x1F, size & 0xFF};
+	STABBY_Si4464_write(change_state_command, 5);
+	spi_deselect();
+}
+
+void STABBY_setPowerLevel(int8_t level) {
+    // Set the Power
+    uint8_t set_pa_pwr_lvl_property_command[] = {0x11, 0x22, 0x01, 0x01, level};
+    STABBY_Si4464_write(set_pa_pwr_lvl_property_command, 5);
+}
+
+
+/**
+ * Tunes the radio and activates transmission.
+ * @param frequency Transmission frequency in Hz
+ * @param shift Shift of FSK in Hz
+ * @param level Transmission power level in dBm
+ */
+int STABBY_radioTune(uint32_t frequency, uint16_t shift, int8_t level, uint16_t size) {
+
+
+	STABBY_setFrequency(frequency, shift); // Set frequency
+    //setShift(shift);                // Set shift
+	/*si4060_set_property_8(PROP_MODEM,
+			MODEM_CLKGEN_BAND,
+			SY_SEL_1 | FVCO_DIV_10);*/
+    STABBY_setPowerLevel(level);           // Set power level
+
+    //STABBY_startTx(size);
+    return 1;
+}
+
+
+static uint32_t outdiv;
+void STABBY_setFrequency(uint32_t freq, uint16_t shift) {
+    // Set the output divider according to recommended ranges given in Si4464 datasheet
+    uint32_t band = 0;
+    if(freq < 705000000UL) {outdiv = 6;  band = 1;};
+    if(freq < 525000000UL) {outdiv = 8;  band = 2;};
+    if(freq < 353000000UL) {outdiv = 12; band = 3;};
+    if(freq < 239000000UL) {outdiv = 16; band = 4;};
+    if(freq < 177000000UL) {outdiv = 24; band = 5;};
+
+    // Set the band parameter
+    uint32_t sy_sel = 8;
+    uint8_t set_band_property_command[] = {0x11, 0x20, 0x01, 0x51, (band + sy_sel)};
+    STABBY_Si4464_write(set_band_property_command, 5);
+
+    // Set the PLL parameters
+    uint32_t f_pfd = 2 * RADIO_CLK / outdiv;
+    uint32_t n = ((uint32_t)(freq / f_pfd)) - 1;
+    float ratio = (float)freq / (float)f_pfd;
+    float rest  = ratio - (float)n;
+
+    uint32_t m = (uint32_t)(rest * 524288UL);
+    uint32_t m2 = m >> 16;
+    uint32_t m1 = (m - m2 * 0x10000) >> 8;
+    uint32_t m0 = (m - m2 * 0x10000 - (m1 << 8));
+
+    uint32_t channel_increment = 524288 * outdiv * shift / (2 * RADIO_CLK);
+    uint8_t c1 = channel_increment / 0x100;
+    uint8_t c0 = channel_increment - (0x100 * c1);
+
+    uint8_t set_frequency_property_command[] = {0x11, 0x40, 0x04, 0x00, n, m2, m1, m0, c1, c0};
+    STABBY_Si4464_write(set_frequency_property_command, 10);
+
+    uint32_t x = ((((uint32_t)1 << 19) * outdiv * 1300.0)/(2*RADIO_CLK))*2;
+    uint8_t x2 = (x >> 16) & 0xFF;
+    uint8_t x1 = (x >>  8) & 0xFF;
+    uint8_t x0 = (x >>  0) & 0xFF;
+    uint8_t set_deviation[] = {0x11, 0x20, 0x03, 0x0a, x2, x1, x0};
+    STABBY_Si4464_write(set_deviation, 7);
+}
+
+
 /*
  * si4060_stop_tx
  *
@@ -284,6 +457,22 @@ void si4060_set_property_8(uint8_t group, uint8_t prop, uint8_t val) {
 	spi_write(val);
 	spi_deselect();
 }
+
+void STABBY_Si4464_write(uint8_t* txData, uint32_t len) {
+	si4060_get_cts(0);
+	spi_select();
+
+	uint8_t index = 0;
+	for (index = 0; index < len; index++) {
+		spi_write(txData[index]);
+	}
+	si4060_get_cts(1);
+	HAL_Delay(50);
+	spi_read(); /* read property */
+	spi_deselect();
+}
+
+
 
 /*
  * si4060_get_property_8

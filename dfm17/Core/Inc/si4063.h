@@ -41,6 +41,9 @@
 #define XO_FREQ					25600000UL
 //#define XO_FREQ					16367600UL
 
+#define RADIO_CLK               XO_FREQ
+
+
 #define RF_FREQ_HZ_2M_RTTY		144700000.0f
 #define RF_FREQ_HZ_2M_EU		144800000.0f
 #define RF_FREQ_HZ_2M_US		144390000.0f
