@@ -404,21 +404,9 @@ static uint8_t current_byte;
 static char msg[] = "hello from KD9PRC hello from KD9PRC hello from KD9PRC ";
 //static uint8_t msg[] = { 0x00, 0x00, 0x00, 0x01, 0x01, 0x01,0x00, 0x00, 0x00, 0x01, 0x01, 0x01, 0x00, 0x00, 0x00, 0x01, 0x01, 0x01, 0x00, 0x00, 0x00, 0x01, 0x01, 0x01, 0x00, 0x00, 0x00, 0x01, 0x01, 0x01, 0x00, 0x00, 0x00, 0x01, 0x01, 0x01, 0x00, 0x00, 0x00, 0x01, 0x01, 0x01, 0x00, 0x00, 0x00, 0x01, 0x01, 0x01 };
 
-int toggle = 0;
 
 
-uint8_t getAFSKbyte(void) {
-
-	if (toggle == 0) {
-		toggle = 1;
-		return PHASE_DELTA_1200;
-	} else {
-		toggle = 0;
-		return PHASE_DELTA_2200;
-	}
-}
-
-uint8_t _getAFSKbyte(void)
+uint8_t getAFSKbyte(void)
 {
 //	if(packet_pos == radio_msg.bin_len) 	// Packet transmission finished
 //		return false;
@@ -484,19 +472,20 @@ void STABBY_aprs(void) {
 	// Initial FIFO fill
 	for(uint16_t i=0; i<c; i++)
 		localBuffer[i] = getAFSKbyte();
-	//STABBY_Si4464_writeFIFO(localBuffer, c);
+	STABBY_Si4464_writeFIFO(localBuffer, c);
 
 	//STABBY_radioTune(144700000, 0, 127, all);
-	STABBY_radioTune(438650000, 0, 127, all);
-	STABBY_si4060_start_tx(1000);
+	STABBY_radioTune(438650000, 0, 127);
+	STABBY_si4060_start_tx(all);
 	int xx;
 
 	for (xx = 0; xx < 100; xx++) {
-		ledOnYellow();
-		//STABBY_Si4464_writeFIFO(localBuffer, c);
-		HAL_Delay(15);
-		ledOffYellow();
+		//ledOnYellow();
+		STABBY_Si4464_writeFIFO(localBuffer, c);
+		HAL_Delay(1);
+		//ledOffYellow();
 	}
+	ledOnYellow();
 	/*
 	for (xx = 0; xx < 10; xx++) {
 		ledOnYellow();
@@ -539,6 +528,7 @@ void STABBY_aprs(void) {
 	si4060_stop_tx();
 	//stopAprsTickTimer();
 	ledOffRed();
+	ledOffYellow();
 }
 
 

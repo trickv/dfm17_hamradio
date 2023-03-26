@@ -346,7 +346,7 @@ void STABBY_setPowerLevel(int8_t level) {
  * @param shift Shift of FSK in Hz
  * @param level Transmission power level in dBm
  */
-int STABBY_radioTune(uint32_t frequency, uint16_t shift, int8_t level, uint16_t size) {
+int STABBY_radioTune(uint32_t frequency, uint16_t shift, int8_t level) {
 
 
 	STABBY_setFrequency(frequency, shift); // Set frequency
@@ -467,7 +467,7 @@ void STABBY_Si4464_write(uint8_t* txData, uint32_t len) {
 		spi_write(txData[index]);
 	}
 	si4060_get_cts(1);
-	HAL_Delay(50);
+	//HAL_Delay(50);
 	spi_read(); /* read property */
 	spi_deselect();
 }
