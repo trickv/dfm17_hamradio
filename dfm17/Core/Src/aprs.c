@@ -390,7 +390,7 @@ void tx_aprs(void) {
 
 // ported from pecan pico 9 radio.c
 // APRS related
-#define PLAYBACK_RATE		2400
+#define PLAYBACK_RATE		13200
 #define BAUD_RATE			1200									/* APRS AFSK baudrate */
 #define SAMPLES_PER_BAUD	(PLAYBACK_RATE / BAUD_RATE)				/* Samples per baud (192kHz / 1200baud = 160samp/baud) */
 #define PHASE_DELTA_1200	(((2 * 1200) << 16) / PLAYBACK_RATE)	/* Delta-phase per sample for 1200Hz tone */
