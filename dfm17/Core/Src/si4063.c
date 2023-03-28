@@ -35,7 +35,16 @@
 #include "spi.h"
 #include "tim.h"
 
+void STABBY_setModemOOK(void) {
+	uint8_t speed_wpm = 20; // set speed to 20 wpm
+    uint16_t speed = speed_wpm * 5 / 6;
+    uint8_t setup_data_rate[] = {0x11, 0x20, 0x03, 0x03, 0x00, 0x00, (uint8_t)speed};
+    STABBY_Si4464_write(setup_data_rate, 7);
 
+    // Use 2FSK from FIFO (PH)
+    uint8_t use_ook[] = {0x11, 0x20, 0x01, 0x00, 0x01};
+    STABBY_Si4464_write(use_ook, 5);
+}
 
 void STABBY_setModemAFSK(void) {
 	// stuff from: si4060_set_aprs_params_TESTING();

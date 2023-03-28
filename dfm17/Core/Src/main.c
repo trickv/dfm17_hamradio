@@ -295,6 +295,54 @@ void process_rtty_tick()
 	rtty_tick = 1;
 }
 
+
+
+void STABBY_ook(void) {
+// ported from si_fifo_feeder_thd radio.c:247
+	//char msg[] = "hello from KD9PRC hello from KD9PRC hello from KD9PRC ";
+    uint8_t msg[] = { 0x00, 0x00, 0x00, 0x01, 0x01 };
+
+
+	si4060_setup(MOD_TYPE_OOK);
+	//si4060_freq_aprs_dfm17();
+	STABBY_setModemOOK();
+	HAL_Delay(250); // wait for the radio to initialize...
+
+    uint16_t c = 129;
+    uint16_t all = (sizeof(msg)+7)/8;
+
+
+    //chRegSetThreadName("radio_tx_feeder");
+    // Initial FIFO fill
+    STABBY_Si4464_writeFIFO(msg, c);
+	ledOnRed();
+	HAL_Delay(250);
+	ledOffRed();
+    // Start transmission
+    STABBY_radioTune(438680000, 0, /* power */ 127);
+    STABBY_si4060_start_tx(all);
+/*
+    while(c < all) { // Do while bytes not written into FIFO completely
+            // Determine free memory in Si4464-FIFO
+            uint8_t more = Si4464_freeFIFO();
+            if(more > all-c) {
+                    if((more = all-c) == 0) // Calculate remainder to send
+          break; // End if nothing left
+            }
+            Si4464_writeFIFO(&radio_msg.buffer[c], more); // Write into FIFO
+            c += more;
+            chThdSleepMilliseconds(15); // That value is ok up to 96k
+    }
+    */
+
+    // Shutdown radio (and wait for Si4464 to finish transmission)
+    //shutdownRadio();
+    HAL_Delay(2000);
+    si4060_stop_tx();
+
+}
+
+
 /* USER CODE END 0 */
 
 /**
@@ -349,7 +397,8 @@ int main(void)
     /* USER CODE BEGIN 3 */
 	  HAL_Delay(1000);
 	  //tx_aprs();
-	  STABBY_aprs();
+	  //STABBY_aprs();
+	  STABBY_ook();
 
 	  // If you're developing APRS and don't want to wait for slow RTTY, comment these out:
 	  //HAL_Delay(1000);
