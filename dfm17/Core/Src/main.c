@@ -313,13 +313,14 @@ void STABBY_ook(void) {
 
 
     //chRegSetThreadName("radio_tx_feeder");
+    STABBY_radioTune(438680000, 0, /* power */ 127);
     // Initial FIFO fill
     STABBY_Si4464_writeFIFO(msg, c);
 	ledOnRed();
 	HAL_Delay(250);
 	ledOffRed();
     // Start transmission
-    STABBY_radioTune(438680000, 0, /* power */ 127);
+
     STABBY_si4060_start_tx(all);
 /*
     while(c < all) { // Do while bytes not written into FIFO completely
