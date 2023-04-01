@@ -36,7 +36,40 @@
 #include "tim.h"
 
 void STABBY_setModemOOK(void) {
-	uint8_t speed_wpm = 20; // set speed to 20 wpm
+    // stuff from Si4464_Init:
+
+    // Set transmitter GPIOs
+    uint8_t gpio_pin_cfg_command[] = {
+        0x13,   // Command type = GPIO settings
+        0x00,   // GPIO0        0 - PULL_CTL[1bit] - GPIO_MODE[6bit]
+        0x23,   // GPIO1        0 - PULL_CTL[1bit] - GPIO_MODE[6bit] // used to be 0x23 wooo
+        0x00,   // GPIO2        0 - PULL_CTL[1bit] - GPIO_MODE[6bit]
+        0x00,   // GPIO3        0 - PULL_CTL[1bit] - GPIO_MODE[6bit]
+        0x00,   // NIRQ
+        0x00,   // SDO // woo
+        0x00    // GEN_CONFIG
+    };
+
+    STABBY_Si4464_write(gpio_pin_cfg_command, 8);
+    HAL_Delay(25);
+    //si4060_set_property_8(PROP_GLOBAL,GLOBAL_XO_TUNE,0x62);
+
+	// Set FIFO empty interrupt threshold (32 byte)
+	uint8_t set_fifo_irq[] = {0x11, 0x12, 0x01, 0x0B, 0x20};
+	STABBY_Si4464_write(set_fifo_irq, 5);
+
+	// Set FIFO to 129 byte
+	uint8_t set_129byte[] = {0x11, 0x00, 0x01, 0x03, 0x10};
+	STABBY_Si4464_write(set_129byte, 5);
+
+	// Reset FIFO
+	uint8_t reset_fifo[] = {0x15, 0x01};
+	STABBY_Si4464_write(reset_fifo, 2);
+	uint8_t unreset_fifo[] = {0x15, 0x00};
+	STABBY_Si4464_write(unreset_fifo, 2);
+
+    // Now OOK configuration stuff from setModemOOK:
+	uint8_t speed_wpm = 40; // set speed to 20 wpm
     uint16_t speed = speed_wpm * 5 / 6;
     uint8_t setup_data_rate[] = {0x11, 0x20, 0x03, 0x03, 0x00, 0x00, (uint8_t)speed};
     STABBY_Si4464_write(setup_data_rate, 7);
@@ -125,11 +158,13 @@ void STABBY_setModemAFSK(void) {
 void STABBY_Si4464_writeFIFO(uint8_t *msg, uint8_t size) {
 	uint8_t write_fifo[size+1];
 	write_fifo[0] = 0x66;
+    // void * memcpy ( void * destination, const void * source, size_t num );
 	memcpy(&write_fifo[1], msg, size);
 	STABBY_Si4464_write(write_fifo, size+1);
 }
 
 uint8_t STABBY_Si4464_freeFIFO(void) {
+    // FIXME: is this acurate?
 	uint8_t fifo_info[2] = {0x15, 0x00};
 	uint8_t rxData[4];
 	STABBY_Si4464_read(fifo_info, 2, rxData, 4);
@@ -471,16 +506,33 @@ void STABBY_Si4464_write(uint8_t* txData, uint32_t len) {
 	si4060_get_cts(0);
 	spi_select();
 
+/*
 	uint8_t index = 0;
 	for (index = 0; index < len; index++) {
 		spi_write(txData[index]);
 	}
-	si4060_get_cts(1);
-	//HAL_Delay(50);
-	spi_read(); /* read property */
+    */
+    SpiWriteData(len, txData);
 	spi_deselect();
+	si4060_get_cts(0);
+	//HAL_Delay(50);
+	//spi_read(); /* read property */
+	//spi_deselect();
+  /* 
+    uint8_t rxData[len];
+    rxData[1] = 0x00;
+    while (rxData[1] != 0xFF) {
+        // Request ACK by Si4464
+        uint8_t rx_ready[] = {0x44};
+        // SPI transfer
+        spi_select();
+        spi_write(rx_ready);
+        SpiReadData(3, rxData);
+        spi_deselect();
+    }
+    */
+  
 }
-
 
 
 /*
@@ -643,16 +695,6 @@ void si4060_setup(uint8_t mod_type) {
 			PREAMBLE_TX_LENGTH,
 			0);
 
-	/* use 2FSK from async GPIO0 */
-	si4060_set_property_8(PROP_MODEM,
-			MODEM_MOD_TYPE,
-			MOD_DIRECT_MODE_SYNC | MOD_GPIO_3 | MOD_SOURCE_DIRECT | (mod_type & 0x07));
-
-	/* setup the NCO data rate for APRS */
-	si4060_set_property_24(PROP_MODEM,
-			MODEM_DATA_RATE,
-			RF_MOD_APRS_SR);
-
 	/* do not transmit sync word */
 	si4060_set_property_8(PROP_SYNC,
 			SYNC_CONFIG,
@@ -669,7 +711,7 @@ void si4060_setup(uint8_t mod_type) {
 	si4060_set_property_8(PROP_PA,
 			PA_BIAS_CLKDUTY,
 			PA_BIAS_CLKDUTY_SIN_25);
-	si4060_set_filter();
+	//si4060_set_filter();
 }
 
 /*

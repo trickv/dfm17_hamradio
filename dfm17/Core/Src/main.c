@@ -299,16 +299,17 @@ void process_rtty_tick()
 
 void STABBY_ook(void) {
 // ported from si_fifo_feeder_thd radio.c:247
-	char msg[] = "hello from KD9PRC hello from KD9PRC hello from KD9PRC ";
-    //uint8_t msg[] = { 0x00, 0x00, 0x00, 0x01, 0x01 };
+	char msg[] = "hello from KD9PRC hello from KD9PRC hello from KD9PRC\0";
+	//char msg[] = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+    //uint8_t msg[] = { 0x00, 0x00, 0x00, 0x01, 0x01, 0x00, 0x00, 0x01, 0x01, 0x00, 0x00, 0x01, 0x01, 0x00, 0x00, 0x01, 0x01, 0x00, 0x00, 0x01, 0x01, 0x00, 0x00, 0x01, 0x01 };
 
 
-	si4060_setup(MOD_TYPE_OOK);
+	//si4060_setup(MOD_TYPE_OOK);
 	//si4060_freq_aprs_dfm17();
 	STABBY_setModemOOK();
 	HAL_Delay(250); // wait for the radio to initialize...
 
-    uint16_t c = 65;
+    uint16_t c = sizeof(msg);
     uint16_t all = (sizeof(msg)+7)/8;
 
 
@@ -316,16 +317,18 @@ void STABBY_ook(void) {
     STABBY_radioTune(438680000, 0, /* power */ 127);
     // Initial FIFO fill
     //STABBY_Si4464_writeFIFO(msg, c);
+    /*
     int y;
     for (y = 0; y < 65; y++) {
         STABBY_Si4464_writeFIFO(msg[y],1);
-    }
+    }*/
 	ledOnRed();
 	HAL_Delay(250);
 	ledOffRed();
     // Start transmission
 
-    STABBY_si4060_start_tx(10000);
+    STABBY_si4060_start_tx(c);
+    /* 
     int xx;
 	for (xx = 0; xx < 50; xx++) {
 		ledOnRed();
@@ -333,6 +336,9 @@ void STABBY_ook(void) {
 		HAL_Delay(20);
 		ledOffRed();
 	}
+    */
+    
+
 	ledOnYellow();
 /*
     while(c < all) { // Do while bytes not written into FIFO completely
