@@ -297,9 +297,15 @@ void process_rtty_tick()
 
 
 
+#include "morse.h"
 void STABBY_ook(void) {
 // ported from si_fifo_feeder_thd radio.c:247
-	char msg[] = "hello from KD9PRC hello from KD9PRC hello from KD9PRC\0";
+	//char msg_char[] = "hello from KD9PRC hello from KD9PRC hello from KD9PRC\0";
+	const char msg_char[] = "1234567890 HELLO FROM KD9PRC HELLO FROM KD9PRC HELLO FROM KD9PRC\0";
+    printf(msg_char);
+    uint8_t msg[129];
+//uint32_t morse_encode(uint8_t* buffer, uint32_t length, const char*     in)
+    morse_encode(msg, sizeof(msg_char), msg_char);
 	//char msg[] = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
     //uint8_t msg[] = { 0x00, 0x00, 0x00, 0x01, 0x01, 0x00, 0x00, 0x01, 0x01, 0x00, 0x00, 0x01, 0x01, 0x00, 0x00, 0x01, 0x01, 0x00, 0x00, 0x01, 0x01, 0x00, 0x00, 0x01, 0x01 };
 
@@ -316,7 +322,7 @@ void STABBY_ook(void) {
     //chRegSetThreadName("radio_tx_feeder");
     STABBY_radioTune(438680000, 0, /* power */ 127);
     // Initial FIFO fill
-    //STABBY_Si4464_writeFIFO(msg, c);
+    STABBY_Si4464_writeFIFO(msg, c);
     /*
     int y;
     for (y = 0; y < 65; y++) {
@@ -356,7 +362,7 @@ void STABBY_ook(void) {
 
     // Shutdown radio (and wait for Si4464 to finish transmission)
     //shutdownRadio();
-    HAL_Delay(7000);
+    HAL_Delay(90000);
 	ledOffYellow();
     si4060_stop_tx();
 
