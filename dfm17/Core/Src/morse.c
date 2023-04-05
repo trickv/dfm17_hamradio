@@ -252,7 +252,7 @@ uint32_t morse_encode(uint8_t* buffer, uint32_t length, const char* in)
 	ccc = 0; // Bitlength
 
 	// Encode morse
-	for(uint32_t i=0; in[i] != 0 && ccc < length*8-16; i++)
+	for(uint32_t i=0; in[i] != 0 && ccc < length*8; i++)
 		morse_encode_char(buffer, in[i]);
 
 	return ccc;
