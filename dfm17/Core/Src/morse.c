@@ -1,10 +1,10 @@
 //#include <stdint.h>
 #include <string.h>
 
-static uint32_t c;
+static uint32_t ccc;
 #define ADDB(buffer, bit) { \
-	buffer[c/8] |= ((bit & 0x1) << (c % 8)); \
-	c++; \
+	buffer[ccc/8] |= ((bit & 0x1) << (7-(ccc % 8))); \
+	ccc++; \
 }
 
 void dah(uint8_t *buffer)
@@ -249,12 +249,12 @@ void morse_encode_char(uint8_t *buffer, char letter)
 uint32_t morse_encode(uint8_t* buffer, uint32_t length, const char* in)
 {
 	memset(buffer, 0, length); // Tidy up
-	c = 0; // Bitlength
+	ccc = 0; // Bitlength
 
 	// Encode morse
-	for(uint32_t i=0; in[i] != 0 && c < length*8-16; i++)
+	for(uint32_t i=0; in[i] != 0 && ccc < length*8-16; i++)
 		morse_encode_char(buffer, in[i]);
 
-	return c;
+	return ccc;
 }
 

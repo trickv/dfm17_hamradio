@@ -301,11 +301,47 @@ void process_rtty_tick()
 void STABBY_ook(void) {
 // ported from si_fifo_feeder_thd radio.c:247
 	//char msg_char[] = "hello from KD9PRC hello from KD9PRC hello from KD9PRC\0";
-	const char msg_char[] = "1234567890 HELLO FROM KD9PRC HELLO FROM KD9PRC HELLO FROM KD9PRC\0";
+	//const char msg_char[] = "1234567890 HELLO FROM KD9PRC HELLO FROM KD9PRC HELLO FROM KD9PRC\0";
+	const char msg_char[] = " AABCDEF  ";
+    printf("omg hi!\r\n");
     printf(msg_char);
+    printf("\r\nohai!\r\n");
+    int zz;
+
     uint8_t msg[129];
+    uint8_t msg2[129];
+    for (zz = 0; zz < sizeof(msg); zz++) {
+        msg[zz] = 0;
+        msg2[zz] = 0;
+    }
+    /*
+    uint8_t *msg;
+    msg = (uint8_t*)malloc(sizeof(uint8_t)*129);
+    */
 //uint32_t morse_encode(uint8_t* buffer, uint32_t length, const char*     in)
     morse_encode(msg, sizeof(msg_char), msg_char);
+
+    for (zz = 0; zz < sizeof(msg); zz++) {
+        printf("%d ", msg[zz]);
+        msg2[zz] = msg[zz];
+    }
+    printf("\r\nb");
+    unsigned int maxPow = 1<<(8-1);
+    int a;
+    for (a = 0; a<sizeof(msg2)/2; a++) {
+        int i = 0;
+        uint8_t cur = msg2[a];
+        for (; i < 8; ++i) {
+            // print last bit and shift left.
+            printf("%u",cur&maxPow ? 1 : 0);
+            cur = cur<<1;
+        }
+        printf(" ");
+    }
+    printf("%d is length of msg", sizeof(msg));
+    printf("\r\n");
+    printf("%d is length of msg_char", sizeof(msg_char));
+    printf("\r\n");
 	//char msg[] = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
     //uint8_t msg[] = { 0x00, 0x00, 0x00, 0x01, 0x01, 0x00, 0x00, 0x01, 0x01, 0x00, 0x00, 0x01, 0x01, 0x00, 0x00, 0x01, 0x01, 0x00, 0x00, 0x01, 0x01, 0x00, 0x00, 0x01, 0x01 };
 
@@ -333,7 +369,9 @@ void STABBY_ook(void) {
 	ledOffRed();
     // Start transmission
 
+    printf("tx starting now...\r\n");
     STABBY_si4060_start_tx(c);
+    printf("tx in progress, sleeping 90\r\n");
     /* 
     int xx;
 	for (xx = 0; xx < 50; xx++) {
@@ -362,7 +400,8 @@ void STABBY_ook(void) {
 
     // Shutdown radio (and wait for Si4464 to finish transmission)
     //shutdownRadio();
-    HAL_Delay(90000);
+    HAL_Delay(60000);
+    printf("tx done, shutting down\r\n");
 	ledOffYellow();
     si4060_stop_tx();
 
