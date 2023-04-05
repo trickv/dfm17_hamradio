@@ -302,7 +302,7 @@ void STABBY_ook(void) {
 // ported from si_fifo_feeder_thd radio.c:247
 	//char msg_char[] = "hello from KD9PRC hello from KD9PRC hello from KD9PRC\0";
 	//const char msg_char[] = "1234567890 HELLO FROM KD9PRC HELLO FROM KD9PRC HELLO FROM KD9PRC\0";
-	const char msg_char[] = " AABCDEF  ";
+	const char msg_char[] = " AABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789  ";
     printf("omg hi!\r\n");
     printf(msg_char);
     printf("\r\nohai!\r\n");
