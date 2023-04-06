@@ -304,8 +304,7 @@ void process_rtty_tick()
  * ported from https://github.com/DL7AD/pecanpico9/blob/master/tracker/software/radio.c function si_fifo_feeder_thd radio.c:247
  */
 void STABBY_ook(void) {
-	//const char msg_char[] = "1234567890 HELLO FROM KD9PRC HELLO FROM KD9PRC HELLO FROM KD9PRC\0";
-	const char msg_char[] = " AABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789  ";
+	const char msg_char[] = " KD9PRC DFM17 AABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789\0";
 	//const char msg_char[] = " ABABAB\0";
     printf("message to tx:\r\n");
     printf(msg_char);
