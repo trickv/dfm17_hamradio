@@ -314,7 +314,7 @@ void STABBY_ook(void) {
     uint8_t msg[129];
     memset(msg, 8, strlen(msg));
 
-    morse_encode(msg, sizeof(msg), msg_char);
+    uint8_t bit_length = morse_encode(msg, sizeof(msg), msg_char);
 
     // debugging: print the binary msg, the 0 and 1s represent off and on bits which the radio sends
     printf("b");
@@ -330,7 +330,7 @@ void STABBY_ook(void) {
         }
         printf(" ");
     }
-    printf("\r\nmsg is %d bytes, msg_char is %d bytes.\r\n", sizeof(msg), sizeof(msg_char));
+    printf("\r\nmsg is %d bytes, msg_char is %d bytes, morse bit length is %u.\r\n", sizeof(msg), sizeof(msg_char), bit_length);
 
 
 	//si4060_setup(MOD_TYPE_OOK);
