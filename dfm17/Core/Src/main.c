@@ -87,6 +87,7 @@
 #include "init.h"
 #include "aprs.h"
 #include "si4063.h"
+#include "morse.h"
 
 /* USER CODE END Includes */
 
@@ -297,15 +298,18 @@ void process_rtty_tick()
 
 
 
-#include "morse.h"
+
+/*
+ * transmits a message on the si4063 radio using OOK / morse code.
+ * ported from https://github.com/DL7AD/pecanpico9/blob/master/tracker/software/radio.c function si_fifo_feeder_thd radio.c:247
+ */
 void STABBY_ook(void) {
-    // ported from si_fifo_feeder_thd radio.c:247
 	//const char msg_char[] = "1234567890 HELLO FROM KD9PRC HELLO FROM KD9PRC HELLO FROM KD9PRC\0";
 	const char msg_char[] = " AABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789  ";
 	//const char msg_char[] = " ABABAB\0";
-    printf("omg hi!\r\n");
+    printf("message to tx:\r\n");
     printf(msg_char);
-    printf("\r\nohai!\r\n");
+    printf("\r\n");
     
     uint8_t msg[129];
     memset(msg, 8, strlen(msg));
@@ -326,14 +330,10 @@ void STABBY_ook(void) {
         }
         printf(" ");
     }
-    printf("\n%d is length of msg", sizeof(msg));
-    printf("\r\n");
-    printf("%d is length of msg_char", sizeof(msg_char));
-    printf("\r\n");
+    printf("\r\nmsg is %d bytes, msg_char is %d bytes.\r\n", sizeof(msg), sizeof(msg_char));
 
 
 	//si4060_setup(MOD_TYPE_OOK);
-	//si4060_freq_aprs_dfm17();
 	STABBY_setModemOOK();
 	HAL_Delay(250); // wait for the radio to initialize...
 
@@ -341,19 +341,12 @@ void STABBY_ook(void) {
     uint16_t all = (sizeof(msg)+7)/8;
 
 
-    //chRegSetThreadName("radio_tx_feeder");
     STABBY_radioTune(438680000, 0, /* power */ 127);
     // Initial FIFO fill
     STABBY_Si4464_writeFIFO(msg, c);
-    /*
-    int y;
-    for (y = 0; y < 65; y++) {
-        STABBY_Si4464_writeFIFO(msg[y],1);
-    }*/
 	ledOnRed();
 	HAL_Delay(250);
 	ledOffRed();
-    // Start transmission
 
     printf("tx starting now...\r\n");
     STABBY_si4060_start_tx(c);
