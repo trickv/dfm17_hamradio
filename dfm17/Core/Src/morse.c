@@ -1,12 +1,28 @@
 //#include <stdint.h>
 #include <string.h>
+/*
+ * a morse dit (short) is a 10.
+ * a morse dah (long) is a 1110.
+ * these get interpreted by the radio as a binary stream
+ *
+ * Ported from https://github.com/DL7AD/pecanpico9/blob/master/tracker/software/protocols/morse/morse.c
+ */
 
 static uint32_t morse_position;
+
+/*
+ * ADDB: add a bit to the morse_position of the buffer
+ *
+ * DFM17 note: this was ported from pecanpico9 but the bits are being
+ * interpreted backwards from what this code did on pecanpico9. This shifts bits
+ * to the MSB first, rather than LSB.
+ */
 #define ADDB(buffer, bit) { \
 	buffer[morse_position/8] |= ((bit & 0x1) << (7-(morse_position % 8))); \
 	morse_position++; \
 }
 
+// adds a 1110 (long tone + short space) to the buffer
 void dah(uint8_t *buffer)
 {
 	ADDB(buffer, 1);
@@ -14,16 +30,22 @@ void dah(uint8_t *buffer)
 	ADDB(buffer, 1);
 	ADDB(buffer, 0);
 }
+
+// adds a 10 (short tone + short space) to the buffer
 void dit(uint8_t *buffer)
 {
 	ADDB(buffer, 1);
 	ADDB(buffer, 0);
 }
+
+// adds the specified number of spaces to the buffer
 void blank(uint8_t *buffer, uint32_t ticks) {
 	for(uint32_t i=0; i<ticks; i++)
 		ADDB(buffer, 0);
 }
 
+// encode a single charachter (char letter) into morse and append it
+// to (uint buffer) the buffer
 void morse_encode_char(uint8_t *buffer, char letter)
 {
 	switch(letter) {
@@ -246,6 +268,12 @@ void morse_encode_char(uint8_t *buffer, char letter)
 	blank(buffer, 4);
 }
 
+/*
+ * morse_encode(output buffer, length of outoput buffer, input buffer)
+ * encodes a char array into morse binary stream format needed by the radio.
+ * stops when we find a null terminator or we hit the output buffer length
+ * returns the number of bits in the outpuy buffer
+ */
 uint32_t morse_encode(uint8_t* buffer, uint32_t length, const char* in)
 {
 	memset(buffer, 0, length); // Tidy up
@@ -257,4 +285,3 @@ uint32_t morse_encode(uint8_t* buffer, uint32_t length, const char* in)
 
 	return morse_position;
 }
-
