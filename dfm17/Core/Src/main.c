@@ -326,7 +326,7 @@ void STABBY_ook(void) {
         }
         printf(" ");
     }
-    printf("%d is length of msg", sizeof(msg));
+    printf("\n%d is length of msg", sizeof(msg));
     printf("\r\n");
     printf("%d is length of msg_char", sizeof(msg_char));
     printf("\r\n");
