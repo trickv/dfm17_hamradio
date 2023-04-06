@@ -306,14 +306,14 @@ void STABBY_ook(void) {
     printf("omg hi!\r\n");
     printf(msg_char);
     printf("\r\nohai!\r\n");
-    int zz;
-
+    
     uint8_t msg[129];
-    for (zz = 0; zz < sizeof(msg); zz++) {
-        msg[zz] = 0;
-    }
+    memset(msg, 8, strlen(msg));
+
     morse_encode(msg, sizeof(msg), msg_char);
 
+    // debugging: print the binary msg, the 0 and 1s represent off and on bits which the radio sends
+    printf("b");
     unsigned int maxPow = 1 << (8-1);
     int a;
     for (a = 0; a < sizeof(msg); a++) {
