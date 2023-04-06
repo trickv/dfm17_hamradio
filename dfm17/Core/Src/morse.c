@@ -1,5 +1,3 @@
-//#include <stdint.h>
-#include <string.h>
 /*
  * a morse dit (short) is a 10.
  * a morse dah (long) is a 1110.
@@ -7,6 +5,8 @@
  *
  * Ported from https://github.com/DL7AD/pecanpico9/blob/master/tracker/software/protocols/morse/morse.c
  */
+
+#include <string.h>
 
 static uint32_t morse_position;
 
