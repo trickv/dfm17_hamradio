@@ -299,8 +299,7 @@ void process_rtty_tick()
 
 #include "morse.h"
 void STABBY_ook(void) {
-// ported from si_fifo_feeder_thd radio.c:247
-	//char msg_char[] = "hello from KD9PRC hello from KD9PRC hello from KD9PRC\0";
+    // ported from si_fifo_feeder_thd radio.c:247
 	//const char msg_char[] = "1234567890 HELLO FROM KD9PRC HELLO FROM KD9PRC HELLO FROM KD9PRC\0";
 	const char msg_char[] = " AABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789  ";
 	//const char msg_char[] = " ABABAB\0";
@@ -310,23 +309,16 @@ void STABBY_ook(void) {
     int zz;
 
     uint8_t msg[129];
-    uint8_t msg2[129];
     for (zz = 0; zz < sizeof(msg); zz++) {
         msg[zz] = 0;
-        msg2[zz] = 0;
     }
-    /*
-    uint8_t *msg;
-    msg = (uint8_t*)malloc(sizeof(uint8_t)*129);
-    */
-//uint32_t morse_encode(uint8_t* buffer, uint32_t length, const char*     in)
     morse_encode(msg, sizeof(msg), msg_char);
 
     unsigned int maxPow = 1<<(8-1);
     int a;
-    for (a = 0; a<sizeof(msg2); a++) {
+    for (a = 0; a<sizeof(msg); a++) {
         int i = 0;
-        uint8_t cur = msg2[a];
+        uint8_t cur = msg[a];
         for (; i < 8; ++i) {
             // print last bit and shift left.
             printf("%u",cur&maxPow ? 1 : 0);
@@ -338,8 +330,6 @@ void STABBY_ook(void) {
     printf("\r\n");
     printf("%d is length of msg_char", sizeof(msg_char));
     printf("\r\n");
-	//char msg[] = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
-    //uint8_t msg[] = { 0x00, 0x00, 0x00, 0x01, 0x01, 0x00, 0x00, 0x01, 0x01, 0x00, 0x00, 0x01, 0x01, 0x00, 0x00, 0x01, 0x01, 0x00, 0x00, 0x01, 0x01, 0x00, 0x00, 0x01, 0x01 };
 
 
 	//si4060_setup(MOD_TYPE_OOK);
