@@ -322,11 +322,6 @@ void STABBY_ook(void) {
 //uint32_t morse_encode(uint8_t* buffer, uint32_t length, const char*     in)
     morse_encode(msg, sizeof(msg), msg_char);
 
-    for (zz = 0; zz < sizeof(msg); zz++) {
-        printf("%d ", msg[zz]);
-        msg2[zz] = msg[zz];
-    }
-    printf("\r\nb");
     unsigned int maxPow = 1<<(8-1);
     int a;
     for (a = 0; a<sizeof(msg2); a++) {
