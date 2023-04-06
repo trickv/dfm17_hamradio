@@ -314,15 +314,15 @@ void STABBY_ook(void) {
     }
     morse_encode(msg, sizeof(msg), msg_char);
 
-    unsigned int maxPow = 1<<(8-1);
+    unsigned int maxPow = 1 << (8-1);
     int a;
-    for (a = 0; a<sizeof(msg); a++) {
+    for (a = 0; a < sizeof(msg); a++) {
         int i = 0;
         uint8_t cur = msg[a];
         for (; i < 8; ++i) {
             // print last bit and shift left.
             printf("%u",cur&maxPow ? 1 : 0);
-            cur = cur<<1;
+            cur = cur << 1;
         }
         printf(" ");
     }
