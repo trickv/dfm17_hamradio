@@ -340,11 +340,11 @@ void STABBY_ook(void) {
 
     STABBY_radioTune(438680000, 0, /* power */ 127);
     uint16_t more;
-    more = si4060_fifo2();
+    more = si4060_fifo_free_space();
     printf("Initial FIFO free space: %d\r\n", more);
     // Initial FIFO fill
     STABBY_Si4464_writeFIFO(msg, c);
-    more = si4060_fifo2();
+    more = si4060_fifo_free_space();
     printf("Ready to tx; FIFO free space: %d\r\n", more);
 	ledOnRed();
 	HAL_Delay(250);
@@ -357,7 +357,7 @@ void STABBY_ook(void) {
     int xx;
     int delay = 5;
 	for (xx = 0; xx < 5000; xx += delay) {
-        more = si4060_fifo2();
+        more = si4060_fifo_free_space();
         uint8_t state = si4060_get_state();
         printf("%4ds FIFO free space: %d, state: %d\r\n", xx, more, state);
         if (more >= 129) {

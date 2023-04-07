@@ -608,17 +608,17 @@ uint8_t si4060_get_property_8(uint8_t group, uint8_t prop) {
 	return temp;
 }
 
-uint8_t si4060_fifo2(void) {
-	uint8_t temp = 0;
+uint8_t si4060_fifo_free_space(void) {
+	uint8_t ret = 0;
 	spi_select();
 	spi_write(0x15);
 	spi_write(0x00);
 	spi_deselect();
 	si4060_get_cts(1);
-	temp = spi_read(); /* read property */
-	temp = spi_read(); /* read property */
+	spi_read(); // first byte is useless flags
+	ret = spi_read(); // actual byte we cate about
 	spi_deselect();
-	return temp;
+	return ret;
 }
 
 uint8_t si4060_get_state(void) {
