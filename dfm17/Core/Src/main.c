@@ -304,8 +304,8 @@ void process_rtty_tick()
  * ported from https://github.com/DL7AD/pecanpico9/blob/master/tracker/software/radio.c function si_fifo_feeder_thd radio.c:247
  */
 void STABBY_ook(void) {
-	const char msg_char[] = " KD9PRC DFM17 AABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789\0";
-	//const char msg_char[] = " ABABAB\0";
+	//const char msg_char[] = " KD9PRC DFM17 AABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789\0";
+	const char msg_char[] = " ABABAB\0";
     printf("message to tx:\r\n");
     printf(msg_char);
     printf("\r\n");
@@ -341,24 +341,30 @@ void STABBY_ook(void) {
 
 
     STABBY_radioTune(438680000, 0, /* power */ 127);
+    uint8_t more;
+    more = si4060_fifo2();
+    printf("Initial FIFO free size: %d\r\n", more);
     // Initial FIFO fill
     STABBY_Si4464_writeFIFO(msg, c);
 	ledOnRed();
 	HAL_Delay(250);
 	ledOffRed();
 
-    printf("tx starting now...\r\n");
     STABBY_si4060_start_tx(c);
     printf("tx in progress, sleeping 90\r\n");
-    /* 
+    
+    // wait for the tx to finish:
     int xx;
-	for (xx = 0; xx < 50; xx++) {
-		ledOnRed();
-		STABBY_Si4464_writeFIFO(msg, 10);
-		HAL_Delay(20);
-		ledOffRed();
+    int delay = 5;
+	for (xx = 0; xx < 5000; xx += delay) {
+        more = si4060_fifo2();
+        printf("%4ds FIFO free size: %d\r\n", xx, more);
+        if (more >= 129) {
+            printf("FIFO is exhausted! :)\r\n");
+            break;
+        }
+		HAL_Delay(delay * 1000);
 	}
-    */
     
 
 	ledOnYellow();
@@ -378,7 +384,6 @@ void STABBY_ook(void) {
 
     // Shutdown radio (and wait for Si4464 to finish transmission)
     //shutdownRadio();
-    HAL_Delay(300000);
     printf("tx done, shutting down\r\n");
 	ledOffYellow();
     si4060_stop_tx();
