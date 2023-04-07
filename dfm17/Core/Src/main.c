@@ -304,16 +304,14 @@ void process_rtty_tick()
  * ported from https://github.com/DL7AD/pecanpico9/blob/master/tracker/software/radio.c function si_fifo_feeder_thd radio.c:247
  */
 void STABBY_ook(void) {
-	//const char msg_char[] = " KD9PRC DFM17 AABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789\0";
-	const char msg_char[] = " ABABAB\0";
-    printf("message to tx:\r\n");
-    printf(msg_char);
-    printf("\r\n");
+	const char msg_char[] = " KD9PRC DFM17 AABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789\0";
+	//const char msg_char[] = " ABABABE\0";
+    printf("message to tx: %s\r\n", msg_char);
     
     uint8_t msg[129];
     memset(msg, 8, strlen(msg));
 
-    uint8_t bit_length = morse_encode(msg, sizeof(msg), msg_char);
+    uint32_t bit_length = morse_encode(msg, sizeof(msg), msg_char);
 
     // debugging: print the binary msg, the 0 and 1s represent off and on bits which the radio sends
     printf("b");
@@ -336,29 +334,32 @@ void STABBY_ook(void) {
 	STABBY_setModemOOK();
 	HAL_Delay(250); // wait for the radio to initialize...
 
-    uint16_t c = sizeof(msg);
+    uint16_t c = (bit_length+7)/8;
     uint16_t all = (sizeof(msg)+7)/8;
 
 
     STABBY_radioTune(438680000, 0, /* power */ 127);
-    uint8_t more;
+    uint16_t more;
     more = si4060_fifo2();
-    printf("Initial FIFO free size: %d\r\n", more);
+    printf("Initial FIFO free space: %d\r\n", more);
     // Initial FIFO fill
     STABBY_Si4464_writeFIFO(msg, c);
+    more = si4060_fifo2();
+    printf("Ready to tx; FIFO free space: %d\r\n", more);
 	ledOnRed();
 	HAL_Delay(250);
 	ledOffRed();
 
     STABBY_si4060_start_tx(c);
-    printf("tx in progress, sleeping 90\r\n");
+    printf("tx initiated; si4060 state=%d\r\n", si4060_get_state());
     
     // wait for the tx to finish:
     int xx;
     int delay = 5;
 	for (xx = 0; xx < 5000; xx += delay) {
         more = si4060_fifo2();
-        printf("%4ds FIFO free size: %d\r\n", xx, more);
+        uint8_t state = si4060_get_state();
+        printf("%4ds FIFO free space: %d, state: %d\r\n", xx, more, state);
         if (more >= 129) {
             printf("FIFO is exhausted! :)\r\n");
             break;
@@ -368,6 +369,19 @@ void STABBY_ook(void) {
     
 
 	ledOnYellow();
+	for (xx = 0; xx < 500; xx++) {
+        uint8_t state = si4060_get_state();
+        printf("si4060 state=%x\r\n", state);
+        if (state == 7) {
+            // still transmitting
+        } else {
+            // now its done
+            printf("tx done, state says so\r\n");
+            break;
+        }
+        HAL_Delay(100);
+    }
+        
 /*
     while(c < all) { // Do while bytes not written into FIFO completely
             // Determine free memory in Si4464-FIFO
@@ -384,7 +398,7 @@ void STABBY_ook(void) {
 
     // Shutdown radio (and wait for Si4464 to finish transmission)
     //shutdownRadio();
-    printf("tx done, shutting down\r\n");
+    printf("si4060 shutting down\r\n");
 	ledOffYellow();
     si4060_stop_tx();
 
