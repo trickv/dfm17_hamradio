@@ -621,6 +621,18 @@ uint8_t si4060_fifo2(void) {
 	return temp;
 }
 
+uint8_t si4060_get_state(void) {
+	uint8_t state, channel = 0;
+	spi_select();
+	spi_write(0x33);
+	spi_deselect();
+	si4060_get_cts(1);
+	state = spi_read(); // the byte that we want
+	channel = spi_read(); // discard this, but if we use channels someday, could be useful to plumb in
+	spi_deselect();
+	return state;
+}
+
 /*
  * si4060_set_property_16
  *
