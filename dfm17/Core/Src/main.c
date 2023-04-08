@@ -459,7 +459,8 @@ int main(void)
     /* USER CODE BEGIN 3 */
 	  HAL_Delay(1000);
 	  //tx_aprs();
-	  //STABBY_aprs();
+	  STABBY_aprs();
+	  HAL_Delay(1000);
 	  STABBY_ook();
 
 	  // If you're developing APRS and don't want to wait for slow RTTY, comment these out:
