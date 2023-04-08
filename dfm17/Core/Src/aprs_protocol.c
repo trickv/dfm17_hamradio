@@ -129,11 +129,10 @@ void aprs_encode_position(ax25_t* packet, const aprs_conf_t *config, trackPoint_
 /**
  * Transmit custom data packet (the methods aprs_encode_data allow multiple APRS packets in a row without preable being sent)
  */
-void aprs_encode_init(ax25_t* packet, uint8_t* buffer, uint16_t size, mod_t mod)
+void aprs_encode_init(ax25_t* packet, uint8_t* buffer, uint16_t size)
 {
 	packet->data = buffer;
 	packet->max_size = size;
-	packet->mod = mod;
 
 	// Encode APRS header
 	ax25_init(packet);

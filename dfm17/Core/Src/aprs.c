@@ -454,7 +454,7 @@ void STABBY_aprs(void) {
 	char[] buffer = "hello world from afsk1200";
     ax25_t ax25_handle;
                         // Encode and transmit position packet                                                                
-    aprs_encode_init(&ax25_handle, buffer, sizeof(buffer), msg.mod);
+    aprs_encode_init(&ax25_handle, buffer, sizeof(buffer));
     aprs_encode_position(&ax25_handle, &(conf->aprs_conf), trackPoint); // Encode packet
     uint32_t bin_len = aprs_encode_finalize(&ax25_handle);
     //transmitOnRadio(&msg, true);

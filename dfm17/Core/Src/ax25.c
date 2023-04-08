@@ -14,12 +14,12 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-#include "ch.h"
-#include "hal.h"
+//#include "ch.h"
+//#include "hal.h"
 #include "ax25.h"
-#include "config.h"
-#include "debug.h"
-#include "aprs.h"
+//#include "config.h"
+//#include "debug.h"
+#include "aprs_protocok.h"
 
 #define AX25_WRITE_BIT(data, size) { \
 	data[size >> 3] |= (1 << (size & 7)); \
@@ -126,11 +126,7 @@ void ax25_send_header(ax25_t *packet, const char *callsign, uint8_t ssid, const 
 	packet->crc = 0xffff;
 
 	// Send preamble ("a bunch of 0s")
-	if(packet->mod == MOD_2GFSK) {
-		preamble = preamble * 6 / 5;
-	} else {
-		preamble = preamble * 3 / 20;
-	}
+    preamble = preamble * 3 / 20;
 	for(i=0; i<preamble; i++)
 	{
 		ax25_send_flag(packet);
@@ -211,24 +207,6 @@ void ax25_send_footer(ax25_t *packet)
 	ax25_send_flag(packet);
 }
 
-/**
-  * Scrambling for 2GFSK
-  */
-void scramble(ax25_t *packet) {
-	if(packet->mod != MOD_2GFSK)
-		return; // Scrambling not necessary
-
-	// Scramble
-	lfsr = 0;
-	for(uint32_t i=0; i<packet->size; i++) {
-		uint8_t bit = scramble_bit((packet->data[i >> 3] >> (i & 0x7)) & 0x1);
-		if(bit) {
-			AX25_WRITE_BIT(packet->data, i);
-		} else {
-			AX25_CLEAR_BIT(packet->data, i);
-		}
-	}
-}
 
 /**
   * NRZ-I tone encoding (0: bit change, 1: no bit change)
