@@ -14,12 +14,18 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
+#include <stdbool.h>
+#include <stddef.h>
+#include <inttypes.h>
 //#include "ch.h"
 //#include "hal.h"
 #include "ax25.h"
 //#include "config.h"
 //#include "debug.h"
-#include "aprs_protocok.h"
+//#include "aprs_protocol.h"
+
+#define APRS_DEST_CALLSIGN "KD9PRC"
+#define APRS_DEST_SSID 1
 
 #define AX25_WRITE_BIT(data, size) { \
 	data[size >> 3] |= (1 << (size & 7)); \

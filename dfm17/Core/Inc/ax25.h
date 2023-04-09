@@ -21,6 +21,9 @@
 //#include "ch.h"
 //#include "hal.h"
 //#include "si4464.h"
+#include <stdbool.h>
+#include <inttypes.h>
+//#include "aprs_protocol.h"
 
 typedef struct {
 	char callsign[7];

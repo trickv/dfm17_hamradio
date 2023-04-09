@@ -14,14 +14,14 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-#include "config.h"
+//#include "config.h"
 #include "ax25.h"
 #include "aprs.h"
 #include <stdlib.h>
 #include <math.h>
 #include <string.h>
-#include "debug.h"
-#include "base91.h"
+//#include "debug.h"
+//#include "base91.h"
 
 #define METER_TO_FEET(m) (((m)*26876) / 8192)
 
@@ -37,16 +37,20 @@ static uint16_t msg_id;
  * - Number of satellites being used
  * - Number of cycles where GPS has been lost (if applicable in cycle)
  */
-void aprs_encode_position(ax25_t* packet, const aprs_conf_t *config, trackPoint_t *trackPoint)
+void aprs_encode_position(ax25_t* packet)
 {
 	char temp[128];
 
 	// Encode header
-	ax25_send_header(packet, config->callsign, config->ssid, config->path, packet->size > 0 ? 0 : config->preamble);
+	ax25_send_header(packet, "KD9PRC", /* ssid */ 8, "WIDE1-1", packet->size > 0 ? 0 : 1000 /* preamble 200ms */);
 	ax25_send_byte(packet, '!');
 
+   uint32_t lat=0;
+   uint32_t lon=0;
+   uint32_t alt=0;
+
 	// Latitude
-	uint32_t y = 380926 * (90 - trackPoint->gps_lat/10000000.0);
+	uint32_t y = 380926 * (90 - lat/10000000.0);
 	uint32_t y3  = y   / 753571;
 	uint32_t y3r = y   % 753571;
 	uint32_t y2  = y3r / 8281;
@@ -55,7 +59,7 @@ void aprs_encode_position(ax25_t* packet, const aprs_conf_t *config, trackPoint_
 	uint32_t y1r = y2r % 91;
 
 	// Longitude
-	uint32_t x = 190463 * (180 + trackPoint->gps_lon/10000000.0);
+	uint32_t x = 190463 * (180 + lon/10000000.0);
 	uint32_t x3  = x   / 753571;
 	uint32_t x3r = x   % 753571;
 	uint32_t x2  = x3r / 8281;
@@ -64,15 +68,16 @@ void aprs_encode_position(ax25_t* packet, const aprs_conf_t *config, trackPoint_
 	uint32_t x1r = x2r % 91;
 
 	// Altitude
-	uint32_t a = logf(METER_TO_FEET(trackPoint->gps_alt)) / logf(1.002f);
+	uint32_t a = logf(METER_TO_FEET(alt)) / logf(1.002f);
 	uint32_t a1  = a / 91;
 	uint32_t a1r = a % 91;
 
-	uint8_t gpsFix = trackPoint->gps_lock == GPS_LOCKED1 || trackPoint->gps_lock == GPS_LOCKED2 ? GSP_FIX_CURRENT : GSP_FIX_OLD;
-	uint8_t src = NMEA_SRC_GGA;
-	uint8_t origin = ORIGIN_PICO;
+	uint8_t gpsFix = 0; // hack
+	uint8_t src = 0; // hack
+	uint8_t origin = 0; // hack
+    uint32_t symbol = 0x2F4F; // hack sym balloon
 
-	temp[0]  = (config->symbol >> 8) & 0xFF;
+	temp[0]  = (symbol >> 8) & 0xFF;
 	temp[1]  = y3+33;
 	temp[2]  = y2+33;
 	temp[3]  = y1+33;
@@ -81,7 +86,7 @@ void aprs_encode_position(ax25_t* packet, const aprs_conf_t *config, trackPoint_
 	temp[6]  = x2+33;
 	temp[7]  = x1+33;
 	temp[8]  = x1r+33;
-	temp[9]  = config->symbol & 0xFF;
+	temp[9]  = symbol & 0xFF;
 	temp[10] = a1+33;
 	temp[11] = a1r+33;
 	temp[12] = ((gpsFix << 5) | (src << 3) | origin) + 33;
@@ -90,6 +95,7 @@ void aprs_encode_position(ax25_t* packet, const aprs_conf_t *config, trackPoint_
 	ax25_send_string(packet, temp);
 
 	// Comments
+    /*
 	base91_encode((uint8_t*)trackPoint, (uint8_t*)temp, sizeof(trackPoint_t));
 	ax25_send_string(packet, temp);
 
@@ -121,7 +127,7 @@ void aprs_encode_position(ax25_t* packet, const aprs_conf_t *config, trackPoint_
 	}
 
 	ax25_send_byte(packet, '|');
-
+*/
 	// Encode footer
 	ax25_send_footer(packet);
 }
@@ -137,6 +143,7 @@ void aprs_encode_init(ax25_t* packet, uint8_t* buffer, uint16_t size)
 	// Encode APRS header
 	ax25_init(packet);
 }
+/*
 void aprs_encode_data_packet(ax25_t* packet, char packetType, const aprs_conf_t *config, uint8_t *data, size_t size)
 {
 	// Encode header
@@ -151,16 +158,16 @@ void aprs_encode_data_packet(ax25_t* packet, char packetType, const aprs_conf_t 
 	// Encode footer
 	ax25_send_footer(packet);
 }
+*/
 uint32_t aprs_encode_finalize(ax25_t* packet)
 {
-	scramble(packet);
 	nrzi_encode(packet);
 	return packet->size;
 }
 
 /**
  * Transmit message packet
- */
+
 void aprs_encode_message(ax25_t* packet, const aprs_conf_t *config, const char *receiver, const char *text)
 {
 	char temp[10];
@@ -182,10 +189,10 @@ void aprs_encode_message(ax25_t* packet, const aprs_conf_t *config, const char *
 	// Encode footer
 	ax25_send_footer(packet);
 }
+*/
 
 /**
  * Transmit APRS telemetry configuration
- */
 void aprs_encode_telemetry_configuration(ax25_t* packet, const aprs_conf_t *config, const telemetry_conf_t type)
 {
 	char temp[4];
@@ -309,7 +316,7 @@ void aprs_encode_telemetry_configuration(ax25_t* packet, const aprs_conf_t *conf
 
 		case CONF_BITS:
 			ax25_send_string(packet, "BITS.11111111,");
-			ax25_send_string(packet, config->tel_comment);
+			ax25_send_string(packet, "liik a comment");
 			break;
 	}
 
@@ -317,4 +324,4 @@ void aprs_encode_telemetry_configuration(ax25_t* packet, const aprs_conf_t *conf
 	// Encode footer
 	ax25_send_footer(packet);
 }
-
+*/

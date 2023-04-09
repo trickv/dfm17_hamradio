@@ -42,6 +42,7 @@
 
 #include "aprs.h"
 #include "aprs_protocol.h"
+#include "tracking.h"
 #include <inttypes.h>
 #include "GNSS.h"
 #include "gps.h"
@@ -402,7 +403,7 @@ static uint32_t phase;					// Fixed point 9.7 (2PI = TABLE_SIZE)
 static uint32_t packet_pos;				// Next bit to be sent out
 static uint32_t current_sample_in_baud;	// 1 bit = SAMPLES_PER_BAUD samples
 static uint8_t current_byte;
-static char msg[] = "hello from KD9PRC hello from KD9PRC hello from KD9PRC ";
+static char buffer[4096];
 //static uint8_t msg[] = { 0x00, 0x00, 0x00, 0x01, 0x01, 0x01,0x00, 0x00, 0x00, 0x01, 0x01, 0x01, 0x00, 0x00, 0x00, 0x01, 0x01, 0x01, 0x00, 0x00, 0x00, 0x01, 0x01, 0x01, 0x00, 0x00, 0x00, 0x01, 0x01, 0x01, 0x00, 0x00, 0x00, 0x01, 0x01, 0x01, 0x00, 0x00, 0x00, 0x01, 0x01, 0x01, 0x00, 0x00, 0x00, 0x01, 0x01, 0x01 };
 
 
@@ -417,7 +418,7 @@ uint8_t getAFSKbyte(void)
 	{
 		if(current_sample_in_baud == 0) {
 			if((packet_pos & 7) == 0) { // Load up next byte
-				current_byte = msg[packet_pos >> 3];
+				current_byte = buffer[packet_pos >> 3];
 			} else { // Load up next bit
 				current_byte = current_byte / 2;
 			}
@@ -451,11 +452,11 @@ void STABBY_aprs(void) {
 	//si4060_freq_aprs_dfm17();
 	STABBY_setModemAFSK();
 
-	char[] buffer = "hello world from afsk1200";
+	//char buffer[] = "hello world from afsk1200";
     ax25_t ax25_handle;
                         // Encode and transmit position packet                                                                
     aprs_encode_init(&ax25_handle, buffer, sizeof(buffer));
-    aprs_encode_position(&ax25_handle, &(conf->aprs_conf), trackPoint); // Encode packet
+    aprs_encode_position(&ax25_handle); // Encode packet
     uint32_t bin_len = aprs_encode_finalize(&ax25_handle);
     //transmitOnRadio(&msg, true);
 
@@ -474,7 +475,7 @@ void STABBY_aprs(void) {
 	current_byte = 0;
 	uint8_t localBuffer[129];
 	uint16_t c = 129;
-	uint16_t all = (sizeof(msg)*8*SAMPLES_PER_BAUD+7)/8;
+	uint16_t all = (sizeof(buffer)*8*SAMPLES_PER_BAUD+7)/8;
 
 	// Initial FIFO fill
 	for(uint16_t i=0; i<c; i++)
@@ -484,34 +485,16 @@ void STABBY_aprs(void) {
 	//STABBY_radioTune(144700000, 0, 127, all);
 	STABBY_radioTune(438650000, 0, 127);
 	STABBY_si4060_start_tx(all);
-	int xx;
-
-	for (xx = 0; xx < 100; xx++) {
-		//ledOnYellow();
-		STABBY_Si4464_writeFIFO(localBuffer, c);
-		HAL_Delay(1);
-		//ledOffYellow();
-	}
 	ledOnYellow();
-	/*
-	for (xx = 0; xx < 10; xx++) {
-		ledOnYellow();
-		deassertSiGPIO3();
-		//STABBY_Si4464_writeFIFO(localBuffer, c);
-		HAL_Delay(100);
-		assertSiGPIO3();
-		HAL_Delay(100);
-		ledOffYellow();
-	}*/
 
 
 	// Start transmission
 	//radioTune(radio_freq, 0, radio_msg.power, all);
 
 	/* code to refill the fifo for a >129 byte tx. cheek out of this for now. */
-	/*while(c < all) { // Do while bytes not written into FIFO completely
+	while(c < all) { // Do while bytes not written into FIFO completely
 		// Determine free memory in Si4464-FIFO
-		uint8_t more = Si4464_freeFIFO();
+		uint8_t more = si4060_fifo_free_space();
 		if(more > all-c) {
 			if((more = all-c) == 0) // Calculate remainder to send
               break; // End if nothing left
@@ -523,7 +506,7 @@ void STABBY_aprs(void) {
 		STABBY_Si4464_writeFIFO(localBuffer, more); // Write into FIFO
 		c += more;
 		HAL_Delay(15);
-	}*/
+	}
 	// Shutdown radio (and wait for Si4464 to finish transmission)
 	//shutdownRadio();
 
@@ -531,7 +514,6 @@ void STABBY_aprs(void) {
 
 	//deassertSiGPIO3();
 
-	HAL_Delay(5000);
 	si4060_stop_tx();
 	//stopAprsTickTimer();
 	ledOffRed();
