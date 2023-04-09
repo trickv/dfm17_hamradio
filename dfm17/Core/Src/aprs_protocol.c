@@ -93,6 +93,7 @@ void aprs_encode_position(ax25_t* packet)
 	temp[13] = 0;
 
 	ax25_send_string(packet, temp);
+    ax25_send_string(packet, "|liik a comment");
 
 	// Comments
     /*
