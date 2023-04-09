@@ -475,7 +475,7 @@ void STABBY_aprs(void) {
 	current_byte = 0;
 	uint8_t localBuffer[129];
 	uint16_t c = 129;
-	uint16_t all = (sizeof(buffer)*8*SAMPLES_PER_BAUD+7)/8;
+	uint16_t all = (bin_len*8*SAMPLES_PER_BAUD+7)/8;
 
 	// Initial FIFO fill
 	for(uint16_t i=0; i<c; i++)
@@ -494,7 +494,7 @@ void STABBY_aprs(void) {
 	/* code to refill the fifo for a >129 byte tx. cheek out of this for now. */
 	while(c < all) { // Do while bytes not written into FIFO completely
 		// Determine free memory in Si4464-FIFO
-		uint8_t more = si4060_fifo_free_space();
+		uint16_t more = si4060_fifo_free_space();
 		if(more > all-c) {
 			if((more = all-c) == 0) // Calculate remainder to send
               break; // End if nothing left
@@ -506,6 +506,7 @@ void STABBY_aprs(void) {
 		STABBY_Si4464_writeFIFO(localBuffer, more); // Write into FIFO
 		c += more;
 		HAL_Delay(15);
+        printf("filler: c=%d all=%d \r\n", c, all);
 	}
 	// Shutdown radio (and wait for Si4464 to finish transmission)
 	//shutdownRadio();

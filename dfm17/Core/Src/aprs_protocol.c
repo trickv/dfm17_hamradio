@@ -42,7 +42,7 @@ void aprs_encode_position(ax25_t* packet)
 	char temp[128];
 
 	// Encode header
-	ax25_send_header(packet, "KD9PRC", /* ssid */ 8, "WIDE1-1", packet->size > 0 ? 0 : 1000 /* preamble 200ms */);
+	ax25_send_header(packet, "KD9PRC", /* ssid */ 8, "WIDE1-1", packet->size > 0 ? 0 : 200 /* preamble 200ms */);
 	ax25_send_byte(packet, '!');
 
    uint32_t lat=0;
