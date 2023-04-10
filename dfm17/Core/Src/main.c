@@ -35,6 +35,11 @@
   *   - Stefan Biereigel
   *   - Modified 2023 in si4063.c and si4063.h
   *
+  * - DL7AD/pecanpico9
+  *   - https://github.com/DL7AD/pecanpico9/
+  *   - DL7AD Sven Steudte
+  *   - aprs_position, ax25, si4x6x radio fifo methods
+  *
   ******************************************************************************
   *	TIMERS
   *	 -------------------------------------------
