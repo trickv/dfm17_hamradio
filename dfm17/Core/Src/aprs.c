@@ -462,7 +462,7 @@ void STABBY_aprs(GNSS_StateHandle *GNSS) {
                         // Encode and transmit position packet                                                                
     aprs_encode_init(&ax25_handle, buffer, sizeof(buffer));
     printf("aprs: lat %d lon %d alt %d\r\n", GNSS->lat, GNSS->lon, GNSS->height);
-    aprs_encode_position(&ax25_handle, GNSS->lat, GNSS->lon, GNSS->height); // Encode packet
+    aprs_encode_position(&ax25_handle, GNSS->lat, GNSS->lon, GNSS->height, GNSS->fixType, GNSS->fixType >= 2); // Encode packet
     bin_len = aprs_encode_finalize(&ax25_handle);
     //transmitOnRadio(&msg, true);
 

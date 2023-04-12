@@ -37,7 +37,7 @@ static uint16_t msg_id;
  * - Number of satellites being used
  * - Number of cycles where GPS has been lost (if applicable in cycle)
  */
-void aprs_encode_position(ax25_t* packet, signed long lat, signed long lon, signed long alt)
+void aprs_encode_position(ax25_t* packet, signed long lat, signed long lon, signed long alt, uint8_t fixType, bool fix)
 {
 	char temp[128];
 
@@ -69,7 +69,7 @@ void aprs_encode_position(ax25_t* packet, signed long lat, signed long lon, sign
 	uint32_t a1  = a / 91;
 	uint32_t a1r = a % 91;
 
-	uint8_t gpsFix = 0; // hack
+	uint8_t gpsFix = fix;
 	uint8_t src = 0; // hack
 	uint8_t origin = 0; // hack
     uint32_t symbol = 0x2F4F; // hack sym balloon
@@ -90,7 +90,9 @@ void aprs_encode_position(ax25_t* packet, signed long lat, signed long lon, sign
 	temp[13] = 0;
 
 	ax25_send_string(packet, temp);
-    ax25_send_string(packet, "|liik a comment");
+    char ft_message[10];
+    sprintf(ft_message, "|fixType %d", fixType);
+    ax25_send_string(packet, ft_message);
 
 	// Comments
     /*
