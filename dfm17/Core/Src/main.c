@@ -449,8 +449,9 @@ int main(void)
   //aprs_prepare_buffer(&GNSS_Handle, 0);
   //calculate_fcs();
 
-  stopGpsLockTimer();
-  stopGpsTickTimer();
+  ///stopGpsLockTimer();
+  //
+  //stopGpsTickTimer();
 
 
   /* USER CODE END 2 */
@@ -464,7 +465,9 @@ int main(void)
     /* USER CODE BEGIN 3 */
 	  HAL_Delay(1000);
 	  //tx_aprs();
-	  STABBY_aprs();
+	  STABBY_aprs(&GNSS_Handle);
+      printf("o hai\r\n");
+      DebugGNSS(&GNSS_Handle);
 	  //HAL_Delay(1000);
 	  //STABBY_ook();
 

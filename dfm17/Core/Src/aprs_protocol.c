@@ -37,7 +37,7 @@ static uint16_t msg_id;
  * - Number of satellites being used
  * - Number of cycles where GPS has been lost (if applicable in cycle)
  */
-void aprs_encode_position(ax25_t* packet)
+void aprs_encode_position(ax25_t* packet, signed long lat, signed long lon, signed long alt)
 {
 	char temp[128];
 
@@ -45,9 +45,6 @@ void aprs_encode_position(ax25_t* packet)
 	ax25_send_header(packet, "KD9PRC", /* ssid */ 8, "WIDE1-1", packet->size > 0 ? 0 : 200 /* preamble 200ms */);
 	ax25_send_byte(packet, '!');
 
-   uint32_t lat=0;
-   uint32_t lon=0;
-   uint32_t alt=0;
 
 	// Latitude
 	uint32_t y = 380926 * (90 - lat/10000000.0);

@@ -404,14 +404,19 @@ static uint32_t packet_pos;				// Next bit to be sent out
 static uint32_t current_sample_in_baud;	// 1 bit = SAMPLES_PER_BAUD samples
 static uint8_t current_byte;
 static char buffer[4096];
+static uint32_t bin_len;
 //static uint8_t msg[] = { 0x00, 0x00, 0x00, 0x01, 0x01, 0x01,0x00, 0x00, 0x00, 0x01, 0x01, 0x01, 0x00, 0x00, 0x00, 0x01, 0x01, 0x01, 0x00, 0x00, 0x00, 0x01, 0x01, 0x01, 0x00, 0x00, 0x00, 0x01, 0x01, 0x01, 0x00, 0x00, 0x00, 0x01, 0x01, 0x01, 0x00, 0x00, 0x00, 0x01, 0x01, 0x01, 0x00, 0x00, 0x00, 0x01, 0x01, 0x01 };
 
 
 
 uint8_t getAFSKbyte(void)
 {
-//	if(packet_pos == radio_msg.bin_len) 	// Packet transmission finished
-//		return false;
+    /*
+	if(packet_pos == bin_len) { 	// Packet transmission finished
+        printf("oops, end of bin_len, but you're looking for more getAFSKbyte\r\n");
+		return false;
+    }
+    */
 
 	uint8_t b = 0;
 	for(uint8_t i=0; i<8; i++)
@@ -441,7 +446,7 @@ uint8_t getAFSKbyte(void)
 	return b;
 }
 
-void STABBY_aprs(void) {
+void STABBY_aprs(GNSS_StateHandle *GNSS) {
 	//aprs_init();
 	ledOnRed();
 	//deassertSiGPIO3();
@@ -456,8 +461,9 @@ void STABBY_aprs(void) {
     ax25_t ax25_handle;
                         // Encode and transmit position packet                                                                
     aprs_encode_init(&ax25_handle, buffer, sizeof(buffer));
-    aprs_encode_position(&ax25_handle); // Encode packet
-    uint32_t bin_len = aprs_encode_finalize(&ax25_handle);
+    printf("aprs: lat %d lon %d alt %d\r\n", GNSS->lat, GNSS->lon, GNSS->height);
+    aprs_encode_position(&ax25_handle, GNSS->lat, GNSS->lon, GNSS->height); // Encode packet
+    bin_len = aprs_encode_finalize(&ax25_handle);
     //transmitOnRadio(&msg, true);
 
 
@@ -476,6 +482,7 @@ void STABBY_aprs(void) {
 	uint8_t localBuffer[129];
 	uint16_t c = 129;
 	uint16_t all = (bin_len*8*SAMPLES_PER_BAUD+7)/8;
+    printf("aprs: all length %d\r\n", all);
 
 	// Initial FIFO fill
 	for(uint16_t i=0; i<c; i++)
@@ -492,6 +499,7 @@ void STABBY_aprs(void) {
 	//radioTune(radio_freq, 0, radio_msg.power, all);
 
 	/* code to refill the fifo for a >129 byte tx. cheek out of this for now. */
+    uint8_t free_zero_counter = 0;
 	while(c < all) { // Do while bytes not written into FIFO completely
 		// Determine free memory in Si4464-FIFO
 		uint16_t more = si4060_fifo_free_space();
@@ -499,14 +507,24 @@ void STABBY_aprs(void) {
 			if((more = all-c) == 0) // Calculate remainder to send
               break; // End if nothing left
 		}
+        if (more == 0) {
+            free_zero_counter++;
+            if (free_zero_counter > 20) {
+                printf("aprs: fifo: Looks like the si4060 died during tx and is not accepting our writes\r\n");
+                break;
+            }
+        } else {
+            free_zero_counter = 0;
+        }
 
-		for(uint16_t i=0; i<more; i++)
+		for(uint16_t i=0; i<more; i++) {
 			localBuffer[i] = getAFSKbyte();
+        }
 
 		STABBY_Si4464_writeFIFO(localBuffer, more); // Write into FIFO
 		c += more;
 		HAL_Delay(15);
-        printf("filler: c=%d all=%d \r\n", c, all);
+        //printf("filler: c=%d all=%d free space=%d\r\n", c, all, more);
 	}
 	// Shutdown radio (and wait for Si4464 to finish transmission)
 	//shutdownRadio();

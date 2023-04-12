@@ -207,6 +207,10 @@ void GNSS_SetMode(GNSS_StateHandle *GNSS, short gnssMode) {
 
 	GNSS->selectedMode = gnssMode;
 }
+
+void DebugGNSS(GNSS_StateHandle *GNSS) {
+      printf("GPS: fixType %d, lat %d, lon %d alt %d, minute %d, sec %d \r\n", GNSS->fixType, GNSS->lat, GNSS->lon, GNSS->height, GNSS->min, GNSS->sec);
+}
 /*!
  * Parse data to navigation position velocity time solution standard.
  * Look at: 32.17.15.1 u-blox 8 Receiver description.

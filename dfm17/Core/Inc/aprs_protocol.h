@@ -47,7 +47,7 @@
 #define SYM_CAR                         0x2F3E
 #define SYM_SHIP                        0x2F73
 
-void aprs_encode_position(ax25_t* packet);
+void aprs_encode_position(ax25_t* packet, signed long lat, signed long lon, signed long alt);
 //void aprs_encode_telemetry_configuration(ax25_t* packet, const aprs_conf_t *config, const telemetry_conf_t type);
 //void aprs_encode_message(ax25_t* packet, const aprs_conf_t *config, const char *receiver, const char *text);
 
