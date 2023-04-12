@@ -34,6 +34,7 @@
 #include "GNSS.h"
 #include "gps.h"
 #include <stdio.h>
+#include <string.h>
 
 volatile union u_Short uShort;
 volatile union i_Short iShort;

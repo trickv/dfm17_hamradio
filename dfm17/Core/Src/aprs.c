@@ -51,6 +51,7 @@
 #include "string.h"
 #include <math.h>
 #include "led.h"
+#include "gpio.h"
 
 /*
  * the APRS data buffer

@@ -34,6 +34,8 @@
 #include "si4063.h"
 #include "spi.h"
 #include "tim.h"
+#include <stdio.h>
+#include <string.h>
 
 void STABBY_setModemOOK(void) {
     // stuff from Si4464_Init:
@@ -161,63 +163,6 @@ void STABBY_Si4464_writeFIFO(uint8_t *msg, uint8_t size) {
     // void * memcpy ( void * destination, const void * source, size_t num );
 	memcpy(&write_fifo[1], msg, size);
 	STABBY_Si4464_write(write_fifo, size+1);
-}
-
-uint8_t STABBY_Si4464_freeFIFO(void) {
-	//si4060_get_cts(0);
-    // FIXME: is this acurate?
-	uint8_t fifo_info[2] = {0x15, 0x00};
-	//uint8_t rxData[4];
-	//STABBY_Si4464_read(fifo_info, 2, rxData, 4);
-	uint8_t ret;
-	spi_select();
-	spi_write(fifo_info);
-    //STABBY_Si4464_write(fifo_info, 2);
-    //spi_write(fifo_info[0]);
-    //spi_write(fifo_info[1]);
-	//spi_deselect();
-    //HAL_Delay(10);
-    //ret = si4060_read_cmd_buf(1);
-    uint8_t rxData[4];
-    rxData[0] = 0x00;
-    rxData[1] = 0x00;
-    rxData[2] = 0x00;
-    rxData[3] = 0x00;
-    int x;
-    for (x = 0; x < 10; x++) {
-        //spi_select();
-        spi_write(CMD_READ_CMD_BUF);
-        //spi_write(0);
-        //spi_write(0);
-        //spi_write(0);
-        //SpiReadData(3, rxData);
-        ret = SpiReadWrite(CMD_READ_CMD_BUF);
-        /*
-        rxData[0] = spi_read();
-        rxData[1] = spi_read();
-        rxData[2] = spi_read();
-        */
-        //rxData[3] = spi_read();
-        printf("CMD_READ: %x\r\n", ret);
-        HAL_Delay(100);
-    }
-    spi_deselect();
-    return ret;
-    return rxData[3];
-
-    printf("\r\nDBG: freeFIFO ret: %x", ret);
-    /*
-	si4060_get_cts(1);
-	ret = spi_read();
-    printf("\r\nDBG: freeFIFO ret: %x", ret);
-    printf("more: %x\r\n", spi_read());
-    printf("more: %x\r\n", spi_read());
-    printf("more: %x\r\n", spi_read());
-	//si4060_get_cts(0);
-	//ret = spi_read();
-    spi_deselect();
-    */
-	return ret;
 }
 
 void si4060_freq_aprs_dfm17(void) {
@@ -622,13 +567,13 @@ uint8_t si4060_fifo_free_space(void) {
 }
 
 uint8_t si4060_get_state(void) {
-	uint8_t state, channel = 0;
+	uint8_t state = 0;
 	spi_select();
 	spi_write(0x33);
 	spi_deselect();
 	si4060_get_cts(1);
 	state = spi_read(); // the byte that we want
-	channel = spi_read(); // discard this, but if we use channels someday, could be useful to plumb in
+	spi_read(); // this reads the channel value which we don't use, but read it out anyway to complete the command
 	spi_deselect();
 	return state;
 }
