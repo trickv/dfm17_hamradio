@@ -31,6 +31,7 @@
 #include "stm32f1xx_it.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include <stdio.h>
 #include "led.h"
 #include "gps.h"
 #include "si4063.h"

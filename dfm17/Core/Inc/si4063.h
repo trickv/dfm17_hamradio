@@ -29,6 +29,7 @@
 #define INC_SI4063_H_
 
 #include "main.h"
+#include <string.h>
 
 /*
  * si4060 software library
@@ -80,6 +81,16 @@
 #define SI_TIMEOUT		100
 
 /* function prototypes */
+
+void STABBY_setModemOOK(void);
+void STABBY_setModemAFSK(void);
+void STABBY_Si4464_writeFIFO(uint8_t *msg, uint8_t size);
+void STABBY_Si4464_write(uint8_t* txData, uint32_t len);
+void STABBY_setFrequency(uint32_t freq, uint16_t shift);
+int STABBY_radioTune(uint32_t frequency, uint16_t shift, int8_t level);
+uint8_t si4060_get_state(void);
+void STABBY_si4060_start_tx(uint16_t size);
+uint8_t si4060_fifo_free_space(void);
 
 void si4060_freq_aprs_reg1(void);
 void si4060_freq_aprs_reg2(void);
