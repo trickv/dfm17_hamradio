@@ -32,6 +32,7 @@
 #include "spi.h"
 #include "tim.h"
 #include "si4063.h"
+#include <stdio.h>
 
 
 extern UART_HandleTypeDef huart2;

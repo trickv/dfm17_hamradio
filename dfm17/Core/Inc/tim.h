@@ -62,6 +62,8 @@ void startGpsTickTimer(void);
 void stopGpsTickTimer(void);
 void startGpsLockTimer(void);
 void stopGpsLockTimer(void);
+void start_rtty_tick_timer(void);
+void stop_rtty_tick_timer(void);
 
 /* USER CODE END Prototypes */
 

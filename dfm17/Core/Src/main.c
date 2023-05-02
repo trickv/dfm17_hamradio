@@ -93,6 +93,9 @@
 #include "aprs.h"
 #include "si4063.h"
 #include "morse.h"
+#include "gpio.h"
+#include <string.h>
+
 
 /* USER CODE END Includes */
 
