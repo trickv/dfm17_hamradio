@@ -36,7 +36,7 @@
 void aprs_prepare_buffer(GNSS_StateHandle *GNSS, uint8_t backlog_fix);
 void tx_aprs(void);
 uint8_t getAFSKbyte(void);
-void STABBY_aprs(void);
+void STABBY_aprs(GNSS_StateHandle *GNSS);
 
 
 /* APRS destination SSID is 0 */
