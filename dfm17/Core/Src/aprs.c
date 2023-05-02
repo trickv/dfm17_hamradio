@@ -499,7 +499,7 @@ void STABBY_aprs(GNSS_StateHandle *GNSS) {
 	// Start transmission
 	//radioTune(radio_freq, 0, radio_msg.power, all);
 
-	/* code to refill the fifo for a >129 byte tx. cheek out of this for now. */
+	/* code to refill the fifo for a >129 byte tx. */
     uint8_t free_zero_counter = 0;
 	while(c < all) { // Do while bytes not written into FIFO completely
 		// Determine free memory in Si4464-FIFO
