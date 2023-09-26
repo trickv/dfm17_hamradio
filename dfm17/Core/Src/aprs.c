@@ -404,7 +404,7 @@ static uint32_t phase;					// Fixed point 9.7 (2PI = TABLE_SIZE)
 static uint32_t packet_pos;				// Next bit to be sent out
 static uint32_t current_sample_in_baud;	// 1 bit = SAMPLES_PER_BAUD samples
 static uint8_t current_byte;
-static char buffer[4096];
+static char buffer[1024];
 static uint32_t bin_len;
 //static uint8_t msg[] = { 0x00, 0x00, 0x00, 0x01, 0x01, 0x01,0x00, 0x00, 0x00, 0x01, 0x01, 0x01, 0x00, 0x00, 0x00, 0x01, 0x01, 0x01, 0x00, 0x00, 0x00, 0x01, 0x01, 0x01, 0x00, 0x00, 0x00, 0x01, 0x01, 0x01, 0x00, 0x00, 0x00, 0x01, 0x01, 0x01, 0x00, 0x00, 0x00, 0x01, 0x01, 0x01, 0x00, 0x00, 0x00, 0x01, 0x01, 0x01 };
 
@@ -463,7 +463,7 @@ void STABBY_aprs(GNSS_StateHandle *GNSS) {
                         // Encode and transmit position packet                                                                
     aprs_encode_init(&ax25_handle, buffer, sizeof(buffer));
     printf("aprs: lat %d lon %d alt %d\r\n", GNSS->lat, GNSS->lon, GNSS->height);
-    aprs_encode_position(&ax25_handle, GNSS->lat, GNSS->lon, GNSS->height, GNSS->fixType, GNSS->fixType >= 2); // Encode packet
+    aprs_encode_position(&ax25_handle, GNSS->lat, GNSS->lon, GNSS->height, GNSS->fixType, GNSS->fixType >= 2, GNSS->hour, GNSS->min, GNSS->sec); // Encode packet
     bin_len = aprs_encode_finalize(&ax25_handle);
     //transmitOnRadio(&msg, true);
 

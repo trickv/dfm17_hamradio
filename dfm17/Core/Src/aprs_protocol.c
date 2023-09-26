@@ -37,7 +37,7 @@ static uint16_t msg_id;
  * - Number of satellites being used
  * - Number of cycles where GPS has been lost (if applicable in cycle)
  */
-void aprs_encode_position(ax25_t* packet, signed long lat, signed long lon, signed long alt, uint8_t fixType, bool fix)
+void aprs_encode_position(ax25_t* packet, signed long lat, signed long lon, signed long alt, uint8_t fixType, bool fix, uint8_t hour, uint8_t min, uint8_t sec)
 {
 	char temp[128];
 
@@ -90,9 +90,14 @@ void aprs_encode_position(ax25_t* packet, signed long lat, signed long lon, sign
 	temp[13] = 0;
 
 	ax25_send_string(packet, temp);
-    char ft_message[10];
-    sprintf(ft_message, "|fixType %d", fixType);
-    ax25_send_string(packet, ft_message);
+    //char ft_message[10];
+    //sprintf(ft_message, "|fixType %d", fixType);
+    //ax25_send_string(packet, ft_message);
+    
+
+    char uptime_message[15];
+    sprintf(uptime_message, "|up %ds %d:%d:%d", HAL_GetTick()/1000, hour, min, sec);
+    ax25_send_string(packet, uptime_message);
 
 	// Comments
     /*
